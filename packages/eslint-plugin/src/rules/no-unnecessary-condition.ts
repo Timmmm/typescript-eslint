@@ -65,6 +65,7 @@ const isLiteral = (type: ts.Type): boolean =>
 export type Options = [
   {
     allowConstantLoopConditions?: boolean;
+    allowComparisonWithUndefined?: boolean;
     allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing?: boolean;
   },
 ];
@@ -100,6 +101,9 @@ export default createRule<Options, MessageId>({
           allowConstantLoopConditions: {
             type: 'boolean',
           },
+          allowComparisonWithUndefined: {
+            type: 'boolean',
+          },
           allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing: {
             type: 'boolean',
           },
@@ -132,6 +136,7 @@ export default createRule<Options, MessageId>({
   defaultOptions: [
     {
       allowConstantLoopConditions: false,
+      allowComparisonWithUndefined: false,
       allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing: false,
     },
   ],
@@ -140,6 +145,7 @@ export default createRule<Options, MessageId>({
     [
       {
         allowConstantLoopConditions,
+        allowComparisonWithUndefined,
         allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing,
       },
     ],
@@ -337,11 +343,12 @@ export default createRule<Options, MessageId>({
           return isTypeFlagSet(type, flag);
         };
 
-        if (
-          (leftType.flags === UNDEFINED &&
-            !isComparable(rightType, UNDEFINED)) ||
-          (rightType.flags === UNDEFINED &&
-            !isComparable(leftType, UNDEFINED)) ||
+        if (!allowComparisonWithUndefined && (
+              (leftType.flags === UNDEFINED &&
+              !isComparable(rightType, UNDEFINED)) ||
+              (rightType.flags === UNDEFINED &&
+              !isComparable(leftType, UNDEFINED))
+          ) ||
           (leftType.flags === NULL && !isComparable(rightType, NULL)) ||
           (rightType.flags === NULL && !isComparable(leftType, NULL))
         ) {
